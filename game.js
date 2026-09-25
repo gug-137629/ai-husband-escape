@@ -22,7 +22,8 @@ const outfits=[
 ];
 let state=load();
 let selectedPet="hadou";
-let storyIndex=0;\nlet editingZone=null;
+let storyIndex=0;
+let editingZone=null;
 
 function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:structuredClone(petsBase),ownedFurniture:[],placements:{},furnitureZones:{},ownedOutfits:[],storySeen:[],storyChoiceCount:0}}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(n)))}
