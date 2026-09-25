@@ -1,0 +1,213 @@
+:root {
+  --bg: #0d1020;
+  --card: #151a30;
+  --card-2: #1c2340;
+  --text: #f7f4ff;
+  --muted: #aaa8c3;
+  --accent: #ff78ae;
+  --accent-2: #8da7ff;
+  --line: rgba(255,255,255,.09);
+  --shadow: 0 24px 70px rgba(0,0,0,.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,120,174,.18), transparent 34%),
+    radial-gradient(circle at 90% 30%, rgba(141,167,255,.16), transparent 30%),
+    var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+button { font: inherit; }
+
+.shell {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 28px 16px 48px;
+}
+
+.hero { padding: 10px 4px 22px; }
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 8px 0 8px;
+  font-size: clamp(30px, 8vw, 54px);
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 620px;
+}
+
+.game-card {
+  background: linear-gradient(180deg, rgba(28,35,64,.96), rgba(15,19,38,.96));
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 14px;
+}
+
+.hud div { display: grid; gap: 3px; }
+.hud span { color: var(--muted); font-size: 12px; }
+.hud strong { font-size: 15px; }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  aspect-ratio: 8 / 6;
+  padding: 6px;
+  background: #090c18;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+}
+
+.cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #202746;
+  font-size: clamp(18px, 5vw, 28px);
+  user-select: none;
+}
+
+.cell.wall {
+  background: #11162a;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+}
+
+.cell.exit {
+  background: linear-gradient(135deg, #47304b, #2a2441);
+}
+
+.player {
+  width: 62%;
+  height: 62%;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ff9ac2, #ff5f9f);
+  box-shadow: 0 0 22px rgba(255,120,174,.45);
+  display: grid;
+  place-items: center;
+  font-size: clamp(16px, 4vw, 23px);
+  z-index: 2;
+}
+
+.robot {
+  width: 66%;
+  height: 66%;
+  border-radius: 14px;
+  background: #d8e0ee;
+  border: 3px solid #8da7ff;
+  color: #151a30;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 24px rgba(141,167,255,.38);
+  font-size: clamp(15px, 4vw, 22px);
+  z-index: 2;
+}
+
+.item { z-index: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,.25)); }
+
+.message {
+  min-height: 66px;
+  margin-top: 14px;
+  padding: 14px 15px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.055);
+  color: #e9e7f5;
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+.message strong { color: var(--accent); }
+
+.controls {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.controls > div {
+  display: flex;
+  gap: 7px;
+}
+
+.controls button,
+.restart {
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: #242c4d;
+  border-radius: 14px;
+  min-width: 58px;
+  min-height: 50px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.controls button:active,
+.restart:active { transform: scale(.96); }
+
+.restart {
+  display: block;
+  margin: 14px auto 0;
+  padding: 0 18px;
+  min-height: 42px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--muted);
+  padding: 18px 5px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.note span { font-size: 20px; }
+
+.note p { margin: 2px 0; }
+
+.win {
+  animation: glow 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: var(--shadow); }
+  to { box-shadow: 0 0 45px rgba(255,120,174,.22), var(--shadow); }
+}
+
+@media (max-width: 430px) {
+  .shell { padding-top: 18px; }
+  .game-card { padding: 11px; border-radius: 23px; }
+  .board { gap: 3px; padding: 4px; }
+  .cell { border-radius: 7px; }
+}
