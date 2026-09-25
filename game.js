@@ -73,7 +73,7 @@ function renderEditorOverlay(){
  const target=$("#"+zone+"Editor"); if(!target)return;
  target.classList.remove("hidden");
  target.innerHTML='<div class="editor-head"><b>布置模式</b><span>拖动家具，点“完成”保存</span><button id="finishEditor">完成</button></div>';
- state.ownedFurniture.forEach(id=>{
+ state.ownedFurniture.filter(id=>(state.furnitureZones?.[id]||"home")===zone).forEach(id=>{
    const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};
    target.insertAdjacentHTML("beforeend",`<div class="editor-piece ${f.kind}" data-editor-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"><span>${f.name}</span></div>`);
  });
