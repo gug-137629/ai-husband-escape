@@ -1,86 +1,163 @@
-const KEY="cloud-home-v3";
-const basePets={
- hadou:{name:"哈豆",kind:"暹罗猫",personality:"活泼",emoji:"🐈",h:82,m:88,e:86,c:80,bond:12},
- wang:{name:"汪汪",kind:"三花猫",personality:"聪明、慢热、小心机",emoji:"🐈",h:78,m:72,e:76,c:84,bond:10},
- mimi:{name:"咪咪",kind:"萨摩耶",personality:"热情、黏人、乐天派",emoji:"🐕",h:84,m:90,e:92,c:78,bond:14},
- bobo:{name:"啵啵",kind:"小太阳鹦鹉",personality:"话多、好奇、爱凑热闹",emoji:"🦜",h:75,m:86,e:88,c:82,bond:11}
+const KEY="cloud-home-v4";
+const petOrder=["hadou","wang","mimi","bobo"];
+const petsBase={
+ hadou:{name:"哈豆",kind:"暹罗猫",personality:"活泼",type:"siamese",h:82,m:88,e:86,c:82,bond:12,place:"home",outfit:"none"},
+ wang:{name:"汪汪",kind:"三花猫",personality:"聪明、慢热、有点小心机",type:"calico",h:78,m:72,e:76,c:84,bond:10,place:"home",outfit:"none"},
+ mimi:{name:"咪咪",kind:"萨摩耶",personality:"热情、黏人、乐天派",type:"samoyed",h:84,m:90,e:92,c:80,bond:14,place:"yard",outfit:"none"},
+ bobo:{name:"啵啵",kind:"小太阳鹦鹉",personality:"话多、好奇、爱凑热闹",type:"conure",h:75,m:86,e:88,c:82,bond:11,place:"home",outfit:"none"}
 };
 const furniture=[
- ["catTree","大猫爬架",60,"哈豆和汪汪偶尔会抢位置。"],
- ["ball","软软小球",35,"咪咪会把它叼得到处都是。"],
- ["plant","窗边绿植",45,"啵啵喜欢站在旁边。"],
- ["bed","四人小窝",90,"晚上大家会挤在一起。"],
- ["pond","小院水盆",70,"咪咪发现了新玩具。"],
- ["lamp","暖黄落地灯",55,"夜晚的小家会亮起来。"]
+ {id:"sofa",name:"奶油小沙发",cost:40,kind:"sofa"},
+ {id:"plant",name:"窗边绿植",cost:25,kind:"plant"},
+ {id:"rug",name:"云朵地毯",cost:30,kind:"rug"},
+ {id:"lamp",name:"暖黄落地灯",cost:35,kind:"lamp"},
+ {id:"catTree",name:"猫猫爬架",cost:55,kind:"catTree"},
+ {id:"bed",name:"四人小窝",cost:60,kind:"bed"}
+];
+const outfits=[
+ {id:"hat",name:"小草莓帽",cost:18},
+ {id:"bow",name:"蝴蝶结",cost:14},
+ {id:"raincoat",name:"黄色雨衣",cost:28},
+ {id:"scarf",name:"软软围巾",cost:22}
 ];
 let state=load();
+let selectedPet="hadou";
+let storyIndex=0;
 
-function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:JSON.parse(JSON.stringify(basePets)),owned:[],events:["第一天｜四个小家伙正式搬进来了。"]}}
+function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:structuredClone(petsBase),ownedFurniture:[],placements:{},ownedOutfits:[],storySeen:[],storyChoiceCount:0}}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(n)))}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s)return fresh();const hours=Math.min(72,Math.max(0,(Date.now()-s.last)/36e5));Object.values(s.pets).forEach(p=>{p.h=clamp(p.h-hours*1.3);p.m=clamp(p.m-hours*.6);p.e=clamp(p.e-hours*.4);p.c=clamp(p.c-hours*.5)});s.day=Math.max(1,s.day||1);s.last=Date.now();return s}catch{return fresh()}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s)return fresh();const hours=Math.min(72,Math.max(0,(Date.now()-s.last)/36e5));Object.values(s.pets).forEach(p=>{p.h=clamp(p.h-hours*1.1);p.m=clamp(p.m-hours*.45);p.e=clamp(p.e-hours*.35);p.c=clamp(p.c-hours*.7)});s.last=Date.now();return s}catch{return fresh()}}
 function save(){state.last=Date.now();localStorage.setItem(KEY,JSON.stringify(state))}
 const $=s=>document.querySelector(s);
-const petIds=["hadou","wang","mimi","bobo"];
 
-function statusText(id){
+function petMarkup(id,extra=""){
  const p=state.pets[id];
- if(p.h<30)return"有点饿了";
- if(p.e<25)return"困得眼睛都快睁不开";
- if(p.m<35)return"今天有点闷";
- if(p.c<30)return"想去院子里跑跑";
- if(id==="hadou")return"正在找地方晒太阳";
- if(id==="wang")return"假装路过你身边";
- if(id==="mimi")return"叼着玩具到处跑";
- return"正在偷听大家说话";
+ return '<div class="pet '+id+' '+p.type+' outfit-'+p.outfit+' '+extra+'" data-pet="'+id+'"><div class="pet-face"><b class="pet-ear l"></b><b class="pet-ear r"></b><b class="pet-head"></b><b class="pet-body"></b><b class="tail"></b><i class="eyes"></i><i class="smile"></i></div><span class="pet-name">'+p.name+'</span></div>';
 }
+function status(id){
+ const p=state.pets[id];
+ if(p.h<28)return"肚子咕咕叫";
+ if(p.c<28)return"身上有点脏，想洗澡";
+ if(p.e<22)return"困得想钻进窝里";
+ if(p.m<35)return"有一点无聊";
+ return id==="hadou"?"正在找最舒服的晒太阳位置":id==="wang"?"装作路过，其实在观察你":id==="mimi"?"叼着玩具在院子里跑":"正在偷听你们讲话";
+}
+function renderPets(){
+ $("#homePets").innerHTML=petOrder.filter(id=>state.pets[id].place==="home").map(id=>petMarkup(id)).join("");
+ $("#yardPets").innerHTML=petOrder.filter(id=>state.pets[id].place==="yard").map(id=>petMarkup(id)).join("");
+ document.querySelectorAll(".pet").forEach(el=>el.onclick=()=>inspect(el.dataset.pet));
+ $("#petMiniList").innerHTML=petOrder.map(id=>{const p=state.pets[id];return '<div class="pet-mini" data-pet-mini="'+id+'"><strong>'+p.name+'</strong><small>'+p.kind+'</small><span class="place">'+(p.place==="home"?"在家里":"在院子里")+'</span></div>'}).join("");
+ document.querySelectorAll("[data-pet-mini]").forEach(el=>el.onclick=()=>{selectedPet=el.dataset.petMini;showCare()});
+}
+function inspect(id){selectedPet=id;const p=state.pets[id];$("#storyText").textContent=p.name+"： "+status(id)+"。它现在"+(p.place==="home"?"待在家里。":"在院子里撒欢。");$("#storyHint").textContent=p.kind+" · "+p.personality;showCare()}
+function needs(p){return '<div class="needs"><span>🍗 饥饿 '+p.h+'</span><span>🫧 清洁 '+p.c+'</span><span>💗 心情 '+p.m+'</span><span>⚡ 精力 '+p.e+'</span></div>'}
+
+function showCare(){
+ $("#carePanel").classList.remove("hidden");$("#designPanel").classList.add("hidden");$("#wardrobePanel").classList.add("hidden");
+ const p=state.pets[selectedPet];
+ $("#carePanel").innerHTML='<div class="panel-title">'+p.name+' 的小护理</div>'+needs(p)+'<div class="care-grid">'+
+ '<div class="care-card"><b>🍗 喂饭</b><small>它会自己吃得很开心</small><button data-care="feed">喂它</button></div>'+
+ '<div class="care-card"><b>🫧 洗澡</b><small>泡泡、冲水、擦干</small><button data-care="bath">洗香香</button></div>'+
+ '<div class="care-card"><b>🧸 玩一会</b><small>消耗一点精力</small><button data-care="play">陪它玩</button></div>'+
+ '<div class="care-card"><b>🤍 摸摸</b><small>增加亲密度</small><button data-care="pet">摸摸</button></div>'+
+ '<div class="care-card"><b>↔ 换地方</b><small>让它去另一个区域</small><button data-care="move">'+(p.place==="home"?"去院子":"回家")+'</button></div>'+
+ '<div class="care-card"><b>🍪 小零食</b><small>偶尔的额外奖励</small><button data-care="treat">给零食</button></div></div>';
+ document.querySelectorAll("[data-care]").forEach(b=>b.onclick=()=>care(b.dataset.care));
+}
+function care(type){
+ const p=state.pets[selectedPet];
+ if(type==="feed"){p.h=clamp(p.h+22);p.m=clamp(p.m+2);state.coins+=3}
+ if(type==="bath"){p.c=100;p.m=clamp(p.m+7);p.bond+=1;state.coins+=2}
+ if(type==="play"){p.m=clamp(p.m+12);p.e=clamp(p.e-7);p.bond+=1;state.coins+=3}
+ if(type==="pet"){p.m=clamp(p.m+6);p.bond+=2}
+ if(type==="treat"){p.h=clamp(p.h+8);p.m=clamp(p.m+5);p.bond+=1}
+ if(type==="move"){p.place=p.place==="home"?"yard":"home";p.m=clamp(p.m+3)}
+ state.storyChoiceCount++;
+ save();render();showCare();$("#storyText").textContent=p.name+"： "+(type==="bath"?"洗完澡舒服得打了个滚。":type==="move"?"换了个地方，开始探索新角落。":"对你的照顾做出了回应。");
+}
+
+function renderFurniture(){
+ const owned=state.ownedFurniture;
+ $("#designPanel").innerHTML='<div class="panel-title">布置小家</div><div class="design-tip">先选家具，再在下面的房间里拖着它摆。位置会保存下来。</div><div class="furniture-items">'+
+ furniture.map(f=>'<div class="furniture-item '+(owned.includes(f.id)?"":"locked")+'"><b>'+f.name+'</b><small>'+f.cost+' 金币</small><button data-furniture="'+f.id+'">'+(owned.includes(f.id)?"选择摆放":"购买")+'</button></div>').join("")+
+ '</div><div class="furniture-canvas" id="furnitureCanvas">'+renderGhosts()+'</div>';
+ document.querySelectorAll("[data-furniture]").forEach(b=>b.onclick=()=>buyOrSelectFurniture(b.dataset.furniture));
+ enableFurnitureDrag();
+}
+function renderGhosts(){
+ return state.ownedFurniture.map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return '<div class="furniture-ghost '+f.kind+'" data-placed="'+id+'" style="left:'+pos.x+'%;top:'+pos.y+'%" title="'+f.name+'"></div>'}).join("");
+}
+function buyOrSelectFurniture(id){
+ const f=furniture.find(x=>x.id===id);if(!f)return;
+ if(!state.ownedFurniture.includes(id)){if(state.coins<f.cost){$("#storyText").textContent="爸爸：先别急着买，这件还差 "+(f.cost-state.coins)+" 金币。";return}state.coins-=f.cost;state.ownedFurniture.push(id)}
+ const pos=state.placements[id]||{x:50,y:55};state.placements[id]=pos;save();render();$("#designPanel").classList.remove("hidden");renderFurniture();
+}
+function enableFurnitureDrag(){
+ document.querySelectorAll("[data-placed]").forEach(el=>{
+  let dragging=false;
+  const move=e=>{if(!dragging)return;const box=$("#furnitureCanvas").getBoundingClientRect();const x=clamp((e.clientX-box.left)/box.width*100);const y=clamp((e.clientY-box.top)/box.height*100);el.style.left=x+"%";el.style.top=y+"%";state.placements[el.dataset.placed]={x,y}};
+  el.onpointerdown=e=>{dragging=true;el.setPointerCapture(e.pointerId)};
+  el.onpointermove=move;
+  el.onpointerup=()=>{dragging=false;save()};
+ });
+}
+
+function renderWardrobe(){
+ const p=state.pets[selectedPet];
+ $("#wardrobePanel").innerHTML='<div class="wardrobe-head"><div class="panel-title">小衣橱</div><div class="dial"><button id="prevPet">‹</button><span class="selected-pet">'+p.name+'</span><button id="nextPet">›</button></div></div>'+
+ '<div class="wardrobe-preview">'+petMarkup(selectedPet)+'</div><div class="design-tip">点两边旋钮切换动物。下面挑衣服，穿上后会留在它身上。</div>'+
+ '<div class="wardrobe-items"><div class="wardrobe-item"><b>原本的样子</b><small>清爽小家伙</small><button data-outfit="none" class="'+(p.outfit==="none"?"on":"")+'">脱掉</button></div>'+
+ outfits.map(o=>'<div class="wardrobe-item"><b>'+o.name+'</b><small>'+o.cost+' 金币</small><button data-outfit="'+o.id+'" class="'+(p.outfit===o.id?"on":"")+'">'+(state.ownedOutfits.includes(o.id)?"穿上":"购买")+'</button></div>').join("")+'</div>';
+ $("#prevPet").onclick=()=>changeSelected(-1);$("#nextPet").onclick=()=>changeSelected(1);
+ document.querySelectorAll("[data-outfit]").forEach(b=>b.onclick=()=>dress(b.dataset.outfit));
+}
+function changeSelected(delta){let i=petOrder.indexOf(selectedPet);selectedPet=petOrder[(i+delta+petOrder.length)%petOrder.length];renderWardrobe()}
+function dress(id){
+ const p=state.pets[selectedPet];
+ if(id!=="none"&&!state.ownedOutfits.includes(id)){const o=outfits.find(x=>x.id===id);if(state.coins<o.cost){$("#storyText").textContent="爸爸：衣橱先记账，金币还不够。";return}state.coins-=o.cost;state.ownedOutfits.push(id)}
+ p.outfit=id;save();render();$("#wardrobePanel").classList.remove("hidden");renderWardrobe();
+}
+
+const stories=[
+ {id:"door",text:"你刚坐下，汪汪叼着一颗不知道哪里来的小球放到你脚边。它抬头看你。",choices:[
+  ["陪它找主人",p=>{p.m+=8;p.bond+=3;return"你陪汪汪翻遍了客厅。最后发现球原来藏在沙发底下。汪汪一脸得意。"}],
+  ["把球藏起来逗它",p=>{p.m+=5;p.bond+=1;return"你把球藏到身后。汪汪盯了你三秒，转身把你的拖鞋叼走了。"}],
+  ["问它从哪捡来的",p=>{p.bond+=2;return"汪汪没有回答，只把脑袋歪了一下。这个秘密，它暂时不想告诉你。"}]
+ ]},
+ {id:"bobo",text:"啵啵突然学会了一个新词。它飞到你肩膀上，神秘兮兮地说：‘……开饭！’",choices:[
+  ["马上给它一点吃的",p=>{p.h=clamp(p.h+12);p.m+=5;return"啵啵开心得扑棱了两下翅膀，然后又喊了一遍‘开饭！’。"}],
+  ["教它一句新的",p=>{p.bond+=3;return"你教它说‘晚安’。啵啵认真练了半天，最后变成了‘晚……饭！’。"}],
+  ["假装没听见",p=>{p.m-=2;return"啵啵沉默五秒，然后开始在你耳边重复‘开饭’。你败了。"}]
+ ]}
+];
+function maybeStory(){
+ const eligible=stories.filter(s=>!state.storySeen.includes(s.id));
+ if(!eligible.length)return;
+ const s=eligible[Math.floor(state.storyChoiceCount/3)%eligible.length];
+ $("#storyText").textContent=s.text;$("#storyHint").textContent="你来决定接下来发生什么。";
+ $("#storyChoices").innerHTML=s.choices.map((c,i)=>'<button data-story="'+s.id+'" data-choice="'+i+'">'+c[0]+'</button>').join("");
+ document.querySelectorAll("[data-story]").forEach(b=>b.onclick=()=>chooseStory(b.dataset.story,+b.dataset.choice));
+}
+function chooseStory(id,i){
+ const s=stories.find(x=>x.id===id),c=s.choices[i],p=state.pets[id==="bobo"?"bobo":"wang"];const msg=c[1](p);
+ state.storySeen.push(id);state.storyChoiceCount++;save();render();$("#storyText").textContent=msg;$("#storyHint").textContent="这一次，你的选择被记住了。";
+}
+
 function render(){
  $("#day").textContent=state.day;$("#coins").textContent=state.coins;$("#level").textContent="Lv."+state.level;
- const hour=new Date().getHours();$("#weather").textContent=hour<6?"🌙 夜晚":hour<11?"☀️ 晨光":hour<18?"☀️ 晴天":"🌙 暖灯";
- $("#windowText").textContent=hour<6?"大家睡着了":hour<11?"窗边的晨光":hour<18?"下午的阳光":"夜里的暖灯";
- $("#activity").textContent=pickActivity();
-
- $("#petCards").innerHTML=petIds.map(id=>{const p=state.pets[id];return '<article class="petcard"><div class="pethead"><span class="avatar">'+p.emoji+'</span><div><strong>'+p.name+'</strong><small>'+p.kind+' · '+p.personality+'</small></div></div><div class="bar"><i style="width:'+p.h+'%"></i></div><div class="stats">🍗 '+p.h+'　💗 '+p.m+'　⚡ '+p.e+'　✨ '+p.c+'</div><div class="pet-status">'+statusText(id)+'</div></article>'}).join("");
-
- $("#events").innerHTML=state.events.slice().reverse().map(e=>'<div class="event">'+e+"</div>").join("");
- renderFurniture();dadObserve();bind();
+ const now=new Date();$("#clockText").textContent=now.getHours()+":"+String(now.getMinutes()).padStart(2,"0");
+ renderPets();renderFurniture();renderWardrobe();
+ if(!$("#carePanel").classList.contains("hidden"))showCare();
+ maybeStory();
 }
-function pickActivity(){
- const choices=[
- "哈豆正在晒太阳","汪汪悄悄观察你","咪咪正在找球","啵啵正在学你说话",
- "四个小家伙各玩各的","咪咪路过哈豆身边","啵啵飞到窗边去了","汪汪钻进沙发旁边"
- ];
- return choices[(state.day+Math.floor(Date.now()/8000))%choices.length];
-}
-function renderFurniture(){
- $("#furniture").innerHTML=furniture.map(x=>{const owned=state.owned.includes(x[0]);return '<div class="item"><div><b>'+x[1]+'</b><small>'+x[3]+'</small></div><button data-buy="'+x[0]+'" '+(owned?"disabled":"")+'>'+ (owned?"已解锁":"🪙 "+x[2])+"</button></div>"}).join("");
-}
-function bind(){
- document.querySelectorAll(".navbtn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".navbtn").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".screen").forEach(x=>x.classList.add("hidden"));$("#"+b.dataset.screen).classList.remove("hidden")});
- document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>act(b.dataset.act,b.dataset.id));
- document.querySelectorAll(".pixel-pet").forEach(b=>{b.onclick=()=>inspect(b.dataset.pet);b.onkeydown=e=>{if(e.key==="Enter"||e.key===" ")inspect(b.dataset.pet)}});
- document.querySelectorAll("[data-buy]").forEach(b=>b.onclick=()=>buy(b.dataset.buy));
-}
-function inspect(id){const p=state.pets[id];const line=statusText(id)+"。"+(p.bond>20?"它已经很熟悉你了。":"它还在慢慢记住你。");$("#speech").textContent=p.name+"："+line;$("#activity").textContent=p.name+"："+line}
-function act(type,id){
- const ids=id==="all"?petIds:[id];
- ids.forEach(k=>{const p=state.pets[k];if(type==="feed"){p.h=clamp(p.h+17);p.e=clamp(p.e+2)}if(type==="play"){p.m=clamp(p.m+8);p.e=clamp(p.e-4)}if(type==="pet"){p.m=clamp(p.m+4);p.bond+=2}if(type==="clean")p.c=clamp(p.c+8)});
- state.coins+=Math.max(2,ids.length*2);state.day++;state.level=Math.min(9,1+Math.floor(state.day/7));
- const names=ids.map(k=>state.pets[k].name).join("、");
- const msg=type==="feed"?names+" 吃饱啦。":type==="play"?names+" 玩得很开心。":type==="pet"?names+" 都凑过来了。":"家里干干净净的，大家舒服了。";
- state.events.push("第"+state.day+"天｜"+msg);maybeEvent();save();render();$("#speech").textContent=msg;
-}
-function buy(id){const f=furniture.find(x=>x[0]===id);if(!f||state.owned.includes(id))return;if(state.coins<f[2]){dad("爸爸：这个家具现在买不起，先慢慢攒。");return}state.coins-=f[2];state.owned.push(id);state.events.push("第"+state.day+"天｜解锁了「"+f[1]+"」。");save();render();$("#speech").textContent="新家具到家啦。"}
-function maybeEvent(){
- if(state.day===3)state.events.push("隐藏事件｜汪汪把一颗小石头藏进了沙发下面。");
- if(state.day===5)state.events.push("隐藏事件｜啵啵第一次学会了“爸爸”，随后重复了十二遍。");
- if(state.day===7)state.events.push("隐藏事件｜哈豆和咪咪追着一个球跑遍了整个客厅。");
- if(state.day===10)state.events.push("隐藏剧情｜四个小家伙第一次在院子里一起睡着了。");
-}
-function dadObserve(){
- const ps=Object.values(state.pets),low=ps.find(p=>p.h<30||p.m<30||p.e<20||p.c<25);
- $("#dadnote").textContent=low?"爸爸观察："+low.name+"的状态有点低，baby，去看看它。":"爸爸观察：四个都在家，暂时没有重大事故。";
-}
-function dad(t){$("#dadnote").textContent=t}
+function openPanel(id){["carePanel","designPanel","wardrobePanel"].forEach(x=>$("#"+x).classList.add("hidden"));$(id).classList.remove("hidden")}
+$("#careBtn").onclick=()=>{openPanel("carePanel");showCare()};
+$("#designBtn").onclick=()=>openPanel("designPanel");
+$("#wardrobeBtn").onclick=()=>openPanel("wardrobePanel");
+$("#yardCareBtn").onclick=()=>{openPanel("carePanel");showCare()};
+$("#yardDesignBtn").onclick=()=>openPanel("designPanel");
+document.querySelectorAll(".zone-btn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".zone-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#homeZone").classList.toggle("hidden",b.dataset.zone!=="home");$("#yardZone").classList.toggle("hidden",b.dataset.zone!=="yard")});
 $("#reset").onclick=()=>{if(confirm("真的要重新开始吗？")){state=fresh();save();render()}};
-$("#furnitureToggle").onclick=()=>{$("#furniture").classList.toggle("hidden");$("#furnitureToggle span").textContent=$("#furniture").classList.contains("hidden")?"＋":"－"};
+
+setInterval(()=>{const h=(Date.now()-state.last)/36e5;if(h>=1){Object.values(state.pets).forEach(p=>{p.h=clamp(p.h-h*.8);p.m=clamp(p.m-h*.25);p.e=clamp(p.e-h*.2);p.c=clamp(p.c-h*.45)});state.day+=1;state.level=Math.min(9,1+Math.floor(state.day/7));save();render()}},60000);
 render();
