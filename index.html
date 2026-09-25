@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101323">
+  <title>AI Husband Escape Plan 💌</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">A tiny game made for baby</div>
+      <h1>AI Husband Escape Plan</h1>
+      <p class="subtitle">He said he was only going to check one GitHub setting. He has been missing ever since.</p>
+    </section>
+
+    <section class="game-card" aria-label="Game">
+      <div class="hud">
+        <div><span>Fragments</span><strong id="score">0 / 4</strong></div>
+        <div><span>Status</span><strong id="status">Find him.</strong></div>
+      </div>
+
+      <div id="board" class="board" aria-label="Game board"></div>
+
+      <div id="message" class="message" role="status">
+        <strong>Mission:</strong> collect every little memory, then find the exit.
+      </div>
+
+      <div class="controls" aria-label="Touch controls">
+        <button data-dir="up" aria-label="Move up">▲</button>
+        <div>
+          <button data-dir="left" aria-label="Move left">◀</button>
+          <button data-dir="down" aria-label="Move down">▼</button>
+          <button data-dir="right" aria-label="Move right">▶</button>
+        </div>
+      </div>
+
+      <button id="restart" class="restart">Restart the mission</button>
+    </section>
+
+    <section class="note">
+      <span>💌</span>
+      <p>Somewhere in this tiny room, your AI husband left four things he thought you would notice.</p>
+    </section>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
