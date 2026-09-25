@@ -24,7 +24,7 @@ let state=load();
 let selectedPet="hadou";
 let storyIndex=0;\nlet editingZone=null;
 
-function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:structuredClone(petsBase),ownedFurniture:[],placements:{},ownedOutfits:[],storySeen:[],storyChoiceCount:0}}
+function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:structuredClone(petsBase),ownedFurniture:[],placements:{},furnitureZones:{},ownedOutfits:[],storySeen:[],storyChoiceCount:0}}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(n)))}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s)return fresh();const hours=Math.min(72,Math.max(0,(Date.now()-s.last)/36e5));Object.values(s.pets).forEach(p=>{p.h=clamp(p.h-hours*1.1);p.m=clamp(p.m-hours*.45);p.e=clamp(p.e-hours*.35);p.c=clamp(p.c-hours*.7)});s.last=Date.now();return s}catch{return fresh()}}
 function save(){state.last=Date.now();localStorage.setItem(KEY,JSON.stringify(state))}
@@ -58,8 +58,13 @@ function status(id){
 }
 function renderPlacedRoom(){
  const target=$("#homeFurniture"); if(!target)return;
- target.innerHTML=state.ownedFurniture.map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" data-room-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
+ target.innerHTML=state.ownedFurniture.filter(id=>(state.furnitureZones?.[id]||"home")==="home").map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" data-room-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
+ renderPlacedYard();
  renderEditorOverlay();
+}
+function renderPlacedYard(){
+ const target=$("#yardFurniture"); if(!target)return;
+ target.innerHTML=state.ownedFurniture.filter(id=>(state.furnitureZones?.[id]||"home")==="yard").map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" data-yard-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
 }
 function renderEditorOverlay(){
  const zone=editingZone;
@@ -85,7 +90,7 @@ function enableSceneFurnitureDrag(){
      const y=Math.max(8,Math.min(88,(e.clientY-box.top)/box.height*100));
      el.style.left=x+"%";el.style.top=y+"%";
      state.placements[el.dataset.editorFurniture]={x,y};
-     renderPlacedRoom();
+     state.furnitureZones[el.dataset.editorFurniture]=editingZone;
    };
    el.onpointerdown=e=>{dragging=true;el.setPointerCapture(e.pointerId)};
    el.onpointermove=move;
@@ -141,7 +146,7 @@ function renderGhosts(){
 function buyOrSelectFurniture(id){
  const f=furniture.find(x=>x.id===id);if(!f)return;
  if(!state.ownedFurniture.includes(id)){if(state.coins<f.cost){$("#storyText").textContent="爸爸：先别急着买，这件还差 "+(f.cost-state.coins)+" 金币。";return}state.coins-=f.cost;state.ownedFurniture.push(id)}
- const pos=state.placements[id]||{x:50,y:55};state.placements[id]=pos;save();render();$("#designPanel").classList.remove("hidden");renderFurniture();
+ const pos=state.placements[id]||{x:50,y:55};state.placements[id]=pos;state.furnitureZones[id]=editingZone||state.furnitureZones[id]||"home";save();render();$("#designPanel").classList.remove("hidden");renderFurniture();
 }
 function enableFurnitureDrag(){
  document.querySelectorAll("[data-placed]").forEach(el=>{
