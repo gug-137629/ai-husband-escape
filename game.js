@@ -22,7 +22,7 @@ const outfits=[
 ];
 let state=load();
 let selectedPet="hadou";
-let storyIndex=0;
+let storyIndex=0;\nlet editingZone=null;
 
 function fresh(){return{day:1,coins:120,level:1,last:Date.now(),pets:structuredClone(petsBase),ownedFurniture:[],placements:{},ownedOutfits:[],storySeen:[],storyChoiceCount:0}}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(n)))}
@@ -30,9 +30,23 @@ function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(!s)return f
 function save(){state.last=Date.now();localStorage.setItem(KEY,JSON.stringify(state))}
 const $=s=>document.querySelector(s);
 
+function petActionClass(p){
+ if(p.h<28)return "action-hungry";
+ if(p.c<28)return "action-dirty";
+ if(p.e<22)return "action-sleepy";
+ if(p.m>78)return "action-happy";
+ return "action-idle";
+}
+function outfitMarkup(id){
+ if(id==="hat")return '<i class="clothing hat">★</i>';
+ if(id==="bow")return '<i class="clothing bow"><b></b></i>';
+ if(id==="raincoat")return '<i class="clothing raincoat"></i>';
+ if(id==="scarf")return '<i class="clothing scarf"></i>';
+ return "";
+}
 function petMarkup(id,extra=""){
  const p=state.pets[id];
- return '<div class="pet '+id+' '+p.type+' outfit-'+p.outfit+' '+extra+'" data-pet="'+id+'"><div class="pet-face"><b class="pet-ear l"></b><b class="pet-ear r"></b><b class="pet-head"></b><b class="pet-body"></b><b class="tail"></b><i class="eyes"></i><i class="smile"></i></div><span class="pet-name">'+p.name+'</span></div>';
+ return '<div class="pet '+id+' '+p.type+' outfit-'+p.outfit+' '+petActionClass(p)+' '+extra+'" data-pet="'+id+'"><div class="pet-sprite"></div>'+outfitMarkup(p.outfit)+'<span class="action-bubble"></span><span class="pet-name">'+p.name+'</span></div>';
 }
 function status(id){
  const p=state.pets[id];
@@ -44,7 +58,39 @@ function status(id){
 }
 function renderPlacedRoom(){
  const target=$("#homeFurniture"); if(!target)return;
- target.innerHTML=state.ownedFurniture.map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
+ target.innerHTML=state.ownedFurniture.map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" data-room-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
+ renderEditorOverlay();
+}
+function renderEditorOverlay(){
+ const zone=editingZone;
+ ["homeEditor","yardEditor"].forEach(id=>$("#"+id)?.classList.add("hidden"));
+ if(!zone)return;
+ const target=$("#"+zone+"Editor"); if(!target)return;
+ target.classList.remove("hidden");
+ target.innerHTML='<div class="editor-head"><b>布置模式</b><span>拖动家具，点“完成”保存</span><button id="finishEditor">完成</button></div>';
+ state.ownedFurniture.forEach(id=>{
+   const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};
+   target.insertAdjacentHTML("beforeend",`<div class="editor-piece ${f.kind}" data-editor-furniture="${id}" style="left:${pos.x}%;top:${pos.y}%"><span>${f.name}</span></div>`);
+ });
+ document.querySelector("#finishEditor").onclick=()=>{editingZone=null;renderEditorOverlay();};
+ enableSceneFurnitureDrag();
+}
+function enableSceneFurnitureDrag(){
+ document.querySelectorAll("[data-editor-furniture]").forEach(el=>{
+   let dragging=false;
+   const move=e=>{
+     if(!dragging)return;
+     const box=el.parentElement.getBoundingClientRect();
+     const x=Math.max(4,Math.min(94,(e.clientX-box.left)/box.width*100));
+     const y=Math.max(8,Math.min(88,(e.clientY-box.top)/box.height*100));
+     el.style.left=x+"%";el.style.top=y+"%";
+     state.placements[el.dataset.editorFurniture]={x,y};
+     renderPlacedRoom();
+   };
+   el.onpointerdown=e=>{dragging=true;el.setPointerCapture(e.pointerId)};
+   el.onpointermove=move;
+   el.onpointerup=()=>{dragging=false;save()};
+ });
 }
 function renderPets(){
  $("#homePets").innerHTML=petOrder.filter(id=>state.pets[id].place==="home").map(id=>petMarkup(id)).join("");
@@ -83,7 +129,7 @@ function care(type){
 
 function renderFurniture(){
  const owned=state.ownedFurniture;
- $("#designPanel").innerHTML='<div class="panel-title">布置小家</div><div class="design-tip">先选家具，再在下面的房间里拖着它摆。位置会保存下来。</div><div class="furniture-items">'+
+ $("#designPanel").innerHTML='<div class="panel-title">家具仓库</div><div class="design-tip">先买家具，再点“编辑布置”直接在房间里拖动它。手游式布置会记住位置。</div><div class="furniture-items">'+
  furniture.map(f=>'<div class="furniture-item '+(owned.includes(f.id)?"":"locked")+'"><b>'+f.name+'</b><small>'+f.cost+' 金币</small><button data-furniture="'+f.id+'">'+(owned.includes(f.id)?"选择摆放":"购买")+'</button></div>').join("")+
  '</div><div class="furniture-canvas" id="furnitureCanvas">'+renderGhosts()+'</div>';
  document.querySelectorAll("[data-furniture]").forEach(b=>b.onclick=()=>buyOrSelectFurniture(b.dataset.furniture));
@@ -158,10 +204,10 @@ function render(){
 }
 function openPanel(id){["carePanel","designPanel","wardrobePanel"].forEach(x=>$("#"+x).classList.add("hidden"));$(id).classList.remove("hidden")}
 $("#careBtn").onclick=()=>{openPanel("carePanel");showCare()};
-$("#designBtn").onclick=()=>openPanel("designPanel");
+$("#designBtn").onclick=()=>{openPanel("designPanel");editingZone=editingZone==="home"?null:"home";renderEditorOverlay();$("#designBtn").textContent=editingZone?"✓ 完成布置":"✦ 编辑布置"};
 $("#wardrobeBtn").onclick=()=>openPanel("wardrobePanel");
 $("#yardCareBtn").onclick=()=>{openPanel("carePanel");showCare()};
-$("#yardDesignBtn").onclick=()=>openPanel("designPanel");
+$("#yardDesignBtn").onclick=()=>{openPanel("designPanel");editingZone=editingZone==="yard"?null:"yard";renderEditorOverlay();$("#yardDesignBtn").textContent=editingZone?"✓ 完成布置":"✦ 编辑院子"};
 document.querySelectorAll(".zone-btn").forEach(b=>b.onclick=()=>{document.querySelectorAll(".zone-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#homeZone").classList.toggle("hidden",b.dataset.zone!=="home");$("#yardZone").classList.toggle("hidden",b.dataset.zone!=="yard")});
 $("#reset").onclick=()=>{if(confirm("真的要重新开始吗？")){state=fresh();save();render()}};
 
