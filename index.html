@@ -1,17 +1,10 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>今晚偷月亮</title><link rel="stylesheet" href="style.css"></head>
-<body>
-<main class="wrap">
-  <header><div class="eyebrow">A TINY NIGHT GAME</div><h1>今晚偷月亮</h1><p>帮小猫把掉下来的星星接住。三次失手，月亮就溜走了。</p></header>
-  <section class="game-card">
-    <div class="hud"><span>⭐ <b id="score">0</b></span><span>连击 <b id="combo">0</b></span><span>❤️ <b id="lives">3</b></span><button id="restart">重新开始</button></div>
-    <div id="stage" class="stage" tabindex="0">
-      <div class="moon"><i></i></div><div class="cloud c1"></div><div class="cloud c2"></div>
-      <div id="cat" class="cat"><div class="ear l"></div><div class="ear r"></div><div class="face"><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i></div><div class="body"></div><div class="tail"></div></div>
-      <div id="message" class="message">按 ← → 移动小猫，接住星星！</div>
-    </div>
-    <div class="controls"><button data-key="ArrowLeft">←</button><button id="start">开始</button><button data-key="ArrowRight">→</button></div>
-    <div class="tip">手机直接按左右键；电脑用键盘 ← →。星星越多，掉得越快。</div>
-  </section>
-  <footer>小猫今晚只负责偷月亮，其他事情明天再说。</footer>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>夜航电台</title><link rel="stylesheet" href="style.css"></head>
+<body><main class="app">
+<header class="top"><div><div class="eyebrow">MIDNIGHT RADIO</div><h1>夜航电台</h1><p>今晚没有任务。你只负责听见一些东西。</p></div><div class="counter"><span id="signal">0</span><small>颗星光</small></div></header>
+<section class="radio" id="radio"><div class="moon"></div><div class="horizon"></div><div class="city"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div id="stars" class="stars"></div><div class="antenna"></div><div class="radio-box"><div class="dial"><span>88</span><b>·</b><span>92</span><b>·</b><span>96</span><b>·</b><span>100</span></div><div class="station" id="station">FM 97.3</div><div class="speaker"><i></i><i></i><i></i></div><button id="tune">调频</button></div><div class="signal-wave wave1"></div><div class="signal-wave wave2"></div></section>
+<section class="message-card"><div class="tag">NOW PLAYING</div><h2 id="title">凌晨 00:17，有人还没睡</h2><p id="message">你转动旋钮。远处有一颗星星刚好亮起来。</p><div id="choices" class="choices"></div></section>
+<section class="collection"><div class="section-head"><b>今晚收到的信号</b><span id="found">0 / 8</span></div><div id="signals" class="signals"></div></section>
+<footer><button id="newNight" class="soft">换一个夜晚</button><span>有些频道只在你愿意停留的时候出现。</span></footer>
 </main><script src="game.js"></script></body></html>
