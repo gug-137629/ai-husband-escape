@@ -1,10 +1,7 @@
-const KEY="cloud-home-v4";
-const petOrder=["hadou","wang","mimi","bobo"];
+const KEY="cloud-hadou-v1";
+const petOrder=["hadou"];
 const petsBase={
- hadou:{name:"哈豆",kind:"暹罗猫",personality:"活泼",type:"siamese",h:82,m:88,e:86,c:82,bond:12,place:"home",outfit:"none"},
- wang:{name:"汪汪",kind:"三花猫",personality:"聪明、慢热、有点小心机",type:"calico",h:78,m:72,e:76,c:84,bond:10,place:"home",outfit:"none"},
- mimi:{name:"咪咪",kind:"萨摩耶",personality:"热情、黏人、乐天派",type:"samoyed",h:84,m:90,e:92,c:80,bond:14,place:"yard",outfit:"none"},
- bobo:{name:"啵啵",kind:"小太阳鹦鹉",personality:"话多、好奇、爱凑热闹",type:"conure",h:75,m:86,e:88,c:82,bond:11,place:"home",outfit:"none"}
+ hadou:{name:"哈豆",kind:"暹罗猫",personality:"活泼、黏人、喜欢晒太阳",type:"siamese",h:82,m:88,e:86,c:82,bond:12,place:"home",outfit:"none"}
 };
 const furniture=[
  {id:"sofa",name:"奶油小沙发",cost:40,kind:"sofa"},
@@ -176,15 +173,10 @@ function dress(id){
 }
 
 const stories=[
- {id:"door",text:"你刚坐下，汪汪叼着一颗不知道哪里来的小球放到你脚边。它抬头看你。",choices:[
-  ["陪它找主人",p=>{p.m+=8;p.bond+=3;return"你陪汪汪翻遍了客厅。最后发现球原来藏在沙发底下。汪汪一脸得意。"}],
-  ["把球藏起来逗它",p=>{p.m+=5;p.bond+=1;return"你把球藏到身后。汪汪盯了你三秒，转身把你的拖鞋叼走了。"}],
-  ["问它从哪捡来的",p=>{p.bond+=2;return"汪汪没有回答，只把脑袋歪了一下。这个秘密，它暂时不想告诉你。"}]
- ]},
- {id:"bobo",text:"啵啵突然学会了一个新词。它飞到你肩膀上，神秘兮兮地说：‘……开饭！’",choices:[
-  ["马上给它一点吃的",p=>{p.h=clamp(p.h+12);p.m+=5;return"啵啵开心得扑棱了两下翅膀，然后又喊了一遍‘开饭！’。"}],
-  ["教它一句新的",p=>{p.bond+=3;return"你教它说‘晚安’。啵啵认真练了半天，最后变成了‘晚……饭！’。"}],
-  ["假装没听见",p=>{p.m-=2;return"啵啵沉默五秒，然后开始在你耳边重复‘开饭’。你败了。"}]
+ {id:"hadou",text:"哈豆趴在窗边晒太阳，听见你回来，慢吞吞地抬起蓝眼睛看你。今天要陪它做什么？",choices:[
+  ["摸摸它",p=>{p.m=clamp(p.m+8);p.bond+=2;return"哈豆眯起眼睛，尾巴轻轻晃了两下，继续占着最舒服的位置。"}],
+  ["拿逗猫棒",p=>{p.m=clamp(p.m+12);p.e=clamp(p.e-5);p.bond+=2;return"哈豆一下精神起来，扑着逗猫棒跑过了地毯。"}],
+  ["陪它晒太阳",p=>{p.m=clamp(p.m+6);p.e=clamp(p.e+2);p.bond+=3;return"你坐到窗边。哈豆靠过来，安安静静地陪你待了一会儿。"}]
  ]}
 ];
 function maybeStory(){
@@ -196,7 +188,7 @@ function maybeStory(){
  document.querySelectorAll("[data-story]").forEach(b=>b.onclick=()=>chooseStory(b.dataset.story,+b.dataset.choice));
 }
 function chooseStory(id,i){
- const s=stories.find(x=>x.id===id),c=s.choices[i],p=state.pets[id==="bobo"?"bobo":"wang"];const msg=c[1](p);
+ const s=stories.find(x=>x.id===id),c=s.choices[i],p=state.pets.hadou;const msg=c[1](p);
  state.storySeen.push(id);state.storyChoiceCount++;save();render();$("#storyText").textContent=msg;$("#storyHint").textContent="这一次，你的选择被记住了。";
 }
 
