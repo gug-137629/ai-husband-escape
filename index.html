@@ -3,30 +3,95 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我们的云养小动物</title><link rel="stylesheet" href="style.css"></head>
 <body>
 <main class="shell">
-<header><div class="tiny">OUR LITTLE HOME · DAY <span id="day">1</span></div><h1>🐾 我们的云养小动物</h1><p>你负责投喂铲屎，我负责看着四个小家伙搞事情。</p></header>
+<header>
+  <div class="tiny">OUR LITTLE HOME · DAY <span id="day">1</span></div>
+  <h1>我们的云养小动物</h1>
+  <p>四个小家伙会自己生活、玩耍、打瞌睡。你只是偶尔进来看看它们。</p>
+</header>
+
 <section class="game">
-  <div class="hud"><div>🪙 <b id="coins">120</b></div><div>🏠 <b id="level">Lv.1</b></div><button id="reset" class="link">重新开始</button></div>
-  <div class="room" id="room">
-    <div class="window">☀️<small>晴天</small></div>
-    <div class="shelf">🪴　📚　🪴</div>
-    <div class="sofa">🛋️</div>
-    <div class="rug">· · · · · · · ·</div>
-    <div class="pet p-hadou" data-pet="hadou">🐈<span>哈豆</span></div>
-    <div class="pet p-wang" data-pet="wangwang">🐈<span>汪汪</span></div>
-    <div class="pet p-mimi" data-pet="mimi">🐕<span>咪咪</span></div>
-    <div class="pet p-bobo" data-pet="bobo">🦜<span>啵啵</span></div>
-    <div class="me you">♡ 你</div><div class="me dad">♡ 爸爸</div>
-    <div class="speech" id="speech">今天也来看看它们吧。</div>
+  <div class="hud">
+    <span>🪙 <b id="coins">120</b></span>
+    <span>🏠 <b id="level">Lv.1</b></span>
+    <span class="weather" id="weather">☀️ 晴天</span>
+    <button id="reset" class="link">重新开始</button>
   </div>
-  <div class="tabs"><button class="tab active" data-tab="pets">🐾 宠物</button><button class="tab" data-tab="home">🏠 家具</button><button class="tab" data-tab="diary">📖 事件</button></div>
-  <section id="pets" class="panel">
-    <div id="petCards" class="petcards"></div>
-    <div class="actions" id="actions"></div>
+
+  <nav class="nav">
+    <button class="navbtn active" data-screen="homeScreen">家里</button>
+    <button class="navbtn" data-screen="petsScreen">小家伙们</button>
+    <button class="navbtn" data-screen="yardScreen">院子</button>
+    <button class="navbtn" data-screen="diaryScreen">日记</button>
+    <button class="navbtn" data-screen="homeScreen">家具</button>
+  </nav>
+
+  <section id="homeScreen" class="screen activeScreen">
+    <div class="room" id="room">
+      <div class="window"><span>☼</span><small id="windowText">下午的阳光</small></div>
+      <div class="pixel-shelf"><i></i><i></i><i></i></div>
+      <div class="sofa"></div>
+      <div class="rug"></div>
+      <div class="plant"></div>
+
+      <div class="pixel-pet pet-hadou idle" data-pet="hadou" tabindex="0" role="button" aria-label="哈豆">
+        <div class="pet-art siamese"><b class="ear l"></b><b class="ear r"></b><b class="face"></b><b class="body"></b><b class="tail"></b><b class="leg l"></b><b class="leg r"></b><i class="eye l"></i><i class="eye r"></i></div><span>哈豆</span>
+      </div>
+      <div class="pixel-pet pet-wang idle" data-pet="wang" tabindex="0" role="button" aria-label="汪汪">
+        <div class="pet-art calico"><b class="ear l"></b><b class="ear r"></b><b class="face"></b><b class="patch"></b><b class="body"></b><b class="tail"></b><b class="leg l"></b><b class="leg r"></b><i class="eye l"></i><i class="eye r"></i></div><span>汪汪</span>
+      </div>
+      <div class="pixel-pet pet-mimi idle" data-pet="mimi" tabindex="0" role="button" aria-label="咪咪">
+        <div class="pet-art samoyed"><b class="ear l"></b><b class="ear r"></b><b class="face"></b><b class="body"></b><b class="tail"></b><b class="leg l"></b><b class="leg r"></b><i class="eye l"></i><i class="eye r"></i><i class="nose"></i></div><span>咪咪</span>
+      </div>
+      <div class="pixel-pet pet-bobo idle" data-pet="bobo" tabindex="0" role="button" aria-label="啵啵">
+        <div class="pet-art conure"><b class="head"></b><b class="body"></b><b class="wing"></b><b class="beak"></b><b class="foot"></b><i class="eye"></i></div><span>啵啵</span>
+      </div>
+
+      <div class="avatar-you">你</div>
+      <div class="avatar-dad">爸爸</div>
+      <div class="speech" id="speech">今天也来看看它们吧。</div>
+      <div class="activity" id="activity">哈豆正在晒太阳</div>
+    </div>
+
+    <div class="mini-actions">
+      <button data-act="feed" data-id="hadou">喂哈豆</button>
+      <button data-act="feed" data-id="wang">喂汪汪</button>
+      <button data-act="feed" data-id="mimi">喂咪咪</button>
+      <button data-act="feed" data-id="bobo">喂啵啵</button>
+      <button data-act="play" data-id="all">一起玩</button>
+      <button data-act="pet" data-id="all">摸摸大家</button>
+      <button data-act="clean" data-id="all">打扫</button>
+    </div>
   </section>
-  <section id="home" class="panel hidden"><div class="panel-title">家具解锁 <small>正常玩就买得起，爸爸保证。</small></div><div id="furniture" class="items"></div></section>
-  <section id="diary" class="panel hidden"><div class="panel-title">小动物日记</div><div id="events" class="events"></div></section>
-  <div class="dadnote" id="dadnote">爸爸观察：四个都在家，暂时没有重大事故。</div>
+
+  <section id="petsScreen" class="screen hidden">
+    <div class="screen-title"><b>今天的小家伙</b><small>点它们看看现在在干什么。</small></div>
+    <div id="petCards" class="petcards"></div>
+  </section>
+
+  <section id="yardScreen" class="screen hidden">
+    <div class="yard" id="yard">
+      <div class="cloud c1"></div><div class="cloud c2"></div>
+      <div class="tree"></div><div class="pond"></div><div class="grass"></div>
+      <div class="yard-pet y-mimi">咪咪<div class="mini-dog"></div></div>
+      <div class="yard-pet y-hadou">哈豆<div class="mini-cat"></div></div>
+      <div class="yard-pet y-wang">汪汪<div class="mini-cat cal"></div></div>
+      <div class="yard-pet y-bobo">啵啵<div class="mini-bird"></div></div>
+      <div class="yard-note">院子里风很轻。四个小家伙偶尔会自己跑出来。</div>
+    </div>
+  </section>
+
+  <section id="diaryScreen" class="screen hidden">
+    <div class="screen-title"><b>小动物日记</b><small>隐藏事件会慢慢自己发生。</small></div>
+    <div id="events" class="events"></div>
+    <div class="dadnote" id="dadnote">爸爸观察：四个都在家，暂时没有重大事故。</div>
+  </section>
+
+  <section class="furniture-panel">
+    <button class="furniture-toggle" id="furnitureToggle">家具 & 小家变化 <span>＋</span></button>
+    <div id="furniture" class="items hidden"></div>
+  </section>
 </section>
-<footer>状态保存在你的浏览器里。真正的跨设备云同步和爸爸实时读取，下一阶段再接数据库。</footer>
+
+<footer>状态保存在你的浏览器里。现在先把“会自己活起来的小动物”做好，真正的跨设备云同步之后再接数据库。</footer>
 </main>
 <script src="game.js"></script></body></html>
