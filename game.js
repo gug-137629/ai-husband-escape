@@ -42,6 +42,10 @@ function status(id){
  if(p.m<35)return"有一点无聊";
  return id==="hadou"?"正在找最舒服的晒太阳位置":id==="wang"?"装作路过，其实在观察你":id==="mimi"?"叼着玩具在院子里跑":"正在偷听你们讲话";
 }
+function renderPlacedRoom(){
+ const target=$("#homeFurniture"); if(!target)return;
+ target.innerHTML=state.ownedFurniture.map(id=>{const f=furniture.find(x=>x.id===id),pos=state.placements[id]||{x:50,y:55};return `<div class="furniture-ghost ${f.kind}" style="left:${pos.x}%;top:${pos.y}%"></div>`}).join("");
+}
 function renderPets(){
  $("#homePets").innerHTML=petOrder.filter(id=>state.pets[id].place==="home").map(id=>petMarkup(id)).join("");
  $("#yardPets").innerHTML=petOrder.filter(id=>state.pets[id].place==="yard").map(id=>petMarkup(id)).join("");
@@ -59,7 +63,7 @@ function showCare(){
  '<div class="care-card"><b>🍗 喂饭</b><small>它会自己吃得很开心</small><button data-care="feed">喂它</button></div>'+
  '<div class="care-card"><b>🫧 洗澡</b><small>泡泡、冲水、擦干</small><button data-care="bath">洗香香</button></div>'+
  '<div class="care-card"><b>🧸 玩一会</b><small>消耗一点精力</small><button data-care="play">陪它玩</button></div>'+
- '<div class="care-card"><b>🤍 摸摸</b><small>增加亲密度</small><button data-care="pet">摸摸</button></div>'+
+ '<div class="care-card"><b>🤍 摸摸</b><small>增加亲密度</small><button data-care="pet">摸摸</button></div><div class="care-card"><b>💬 说句话</b><small>它会回应你</small><button data-care="talk">聊天</button></div>'+
  '<div class="care-card"><b>↔ 换地方</b><small>让它去另一个区域</small><button data-care="move">'+(p.place==="home"?"去院子":"回家")+'</button></div>'+
  '<div class="care-card"><b>🍪 小零食</b><small>偶尔的额外奖励</small><button data-care="treat">给零食</button></div></div>';
  document.querySelectorAll("[data-care]").forEach(b=>b.onclick=()=>care(b.dataset.care));
@@ -70,6 +74,7 @@ function care(type){
  if(type==="bath"){p.c=100;p.m=clamp(p.m+7);p.bond+=1;state.coins+=2}
  if(type==="play"){p.m=clamp(p.m+12);p.e=clamp(p.e-7);p.bond+=1;state.coins+=3}
  if(type==="pet"){p.m=clamp(p.m+6);p.bond+=2}
+ if(type==="talk"){const words=prompt("想对 "+p.name+" 说什么？");if(words){p.m=clamp(p.m+7);p.bond+=2;$("#storyText").textContent=p.name+"：\""+words+"\"…… "+(selectedPet==="bobo"?"啵啵立刻学着重复了一遍。":"它认真看着你，像是真的听懂了。");}}
  if(type==="treat"){p.h=clamp(p.h+8);p.m=clamp(p.m+5);p.bond+=1}
  if(type==="move"){p.place=p.place==="home"?"yard":"home";p.m=clamp(p.m+3)}
  state.storyChoiceCount++;
@@ -144,6 +149,7 @@ function chooseStory(id,i){
 }
 
 function render(){
+ renderPlacedRoom();
  $("#day").textContent=state.day;$("#coins").textContent=state.coins;$("#level").textContent="Lv."+state.level;
  const now=new Date();$("#clockText").textContent=now.getHours()+":"+String(now.getMinutes()).padStart(2,"0");
  renderPets();renderFurniture();renderWardrobe();
